@@ -1,0 +1,1191 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Qualidades Fisiológicas do Som — Laboratório Interativo de Física</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Plus Jakarta Sans & Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        display: ['Plus Jakarta Sans', 'sans-serif'],
+                    },
+                    colors: {
+                        navy: {
+                            950: '#070B14',
+                            900: '#0B1120',
+                            800: '#111827',
+                            700: '#1E293B',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            background-color: #0B1120;
+            color: #F8FAFC;
+            overflow-x: hidden;
+        }
+        .glass-card {
+            background: rgba(17, 24, 39, 0.72);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(51, 65, 85, 0.6);
+        }
+        .glow-cyan { box-shadow: 0 0 30px -10px rgba(6, 182, 212, 0.35); }
+        .glow-emerald { box-shadow: 0 0 30px -10px rgba(16, 185, 129, 0.35); }
+        .glow-violet { box-shadow: 0 0 30px -10px rgba(139, 92, 246, 0.35); }
+        
+        /* Custom Range Slider */
+        input[type="range"] {
+            -webkit-appearance: none;
+            appearance: none;
+            background: transparent;
+            cursor: pointer;
+        }
+        input[type="range"]::-webkit-slider-runnable-track {
+            height: 6px;
+            border-radius: 999px;
+            background: #1E293B;
+        }
+        input[type="range"].slider-cyan::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            height: 18px;
+            width: 18px;
+            border-radius: 50%;
+            background: #06B6D4;
+            margin-top: -6px;
+            box-shadow: 0 0 10px rgba(6, 182, 212, 0.8);
+        }
+        input[type="range"].slider-emerald::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            height: 18px;
+            width: 18px;
+            border-radius: 50%;
+            background: #10B981;
+            margin-top: -6px;
+            box-shadow: 0 0 10px rgba(16, 185, 129, 0.8);
+        }
+        canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+    </style>
+</head>
+<body class="antialiased selection:bg-cyan-500/30 selection:text-cyan-200">
+
+    <!-- Navbar Fixa -->
+    <nav class="sticky top-0 z-50 border-b border-slate-800/80 bg-[#0B1120]/85 backdrop-blur-md">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
+            <a href="#" class="flex items-center gap-2.5 group">
+                <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-cyan-500 to-violet-600 flex items-center justify-center shadow-lg shadow-cyan-500/20">
+                    <svg class="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3" />
+                    </svg>
+                </div>
+                <span class="font-display font-bold text-lg tracking-tight text-white">Acústica<span class="text-cyan-400">Lab</span></span>
+            </a>
+
+            <div class="hidden md:flex items-center gap-6 text-sm font-medium text-slate-300">
+                <a href="#introducao" class="hover:text-white transition">Introdução</a>
+                <a href="#altura" class="hover:text-cyan-400 transition">1. Altura</a>
+                <a href="#intensidade" class="hover:text-emerald-400 transition">2. Intensidade</a>
+                <a href="#timbre" class="hover:text-violet-400 transition">3. Timbre</a>
+                <a href="#resumo" class="hover:text-white transition">Resumo & Quiz</a>
+            </div>
+
+            <!-- Botão Global para Parar Qualquer Áudio Ativo -->
+            <button id="globalStopAudio" onclick="stopAllAudio()" class="hidden items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-rose-500/20 text-rose-300 border border-rose-500/40 hover:bg-rose-500/30 transition">
+                <span class="w-2 h-2 rounded-full bg-rose-400 animate-ping"></span>
+                Silenciar Som
+            </button>
+        </div>
+    </nav>
+
+    <!-- HERO / INTRODUÇÃO -->
+    <header id="introducao" class="relative pt-12 pb-16 sm:pt-20 sm:pb-24 overflow-hidden border-b border-slate-800/60">
+        <!-- Fundo decorativo sutil -->
+        <div class="absolute inset-0 pointer-events-none overflow-hidden">
+            <div class="absolute -top-24 left-1/4 w-96 h-96 bg-cyan-500/10 rounded-full blur-3xl"></div>
+            <div class="absolute top-12 right-1/4 w-96 h-96 bg-violet-600/10 rounded-full blur-3xl"></div>
+        </div>
+
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 relative z-10">
+            <div class="text-center max-w-3xl mx-auto">
+                <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-slate-800/90 border border-slate-700 text-cyan-300 text-xs font-semibold uppercase tracking-wider mb-6">
+                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
+                    </svg>
+                    Física • Ondulatória e Acústica
+                </div>
+
+                <h1 class="font-display text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-white mb-6 leading-tight">
+                    Qualidades Fisiológicas <span class="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-emerald-400 to-violet-400">do Som</span>
+                </h1>
+
+                <p class="text-base sm:text-lg text-slate-300 leading-relaxed mb-8 glass-card p-6 rounded-2xl text-left sm:text-center shadow-xl">
+                    O som é uma <strong class="text-white font-semibold">onda mecânica longitudinal</strong> que se propaga por meios materiais (<span class="text-cyan-300">sólidos, líquidos ou gasosos</span>). Quando essas ondas atingem o aparelho auditivo humano, são convertidas em impulsos elétricos e interpretadas pelo cérebro.
+                </p>
+
+                <!-- Atalhos Rápidos -->
+                <div class="flex flex-wrap items-center justify-center gap-3 mb-10">
+                    <a href="#altura" class="px-5 py-2.5 rounded-xl bg-cyan-500/15 hover:bg-cyan-500/25 border border-cyan-500/40 text-cyan-300 font-semibold text-sm transition">
+                        1. Altura (Agudo vs. Grave)
+                    </a>
+                    <a href="#intensidade" class="px-5 py-2.5 rounded-xl bg-emerald-500/15 hover:bg-emerald-500/25 border border-emerald-500/40 text-emerald-300 font-semibold text-sm transition">
+                        2. Intensidade (Forte vs. Fraco)
+                    </a>
+                    <a href="#timbre" class="px-5 py-2.5 rounded-xl bg-violet-500/15 hover:bg-violet-500/25 border border-violet-500/40 text-violet-300 font-semibold text-sm transition">
+                        3. Timbre (Assinatura)
+                    </a>
+                </div>
+            </div>
+
+            <!-- Canvas Decorativo da Onda Sonora no Hero -->
+            <div class="max-w-4xl mx-auto h-28 sm:h-36 rounded-2xl glass-card overflow-hidden relative border border-slate-700/70">
+                <div class="absolute top-2.5 left-4 text-[11px] font-mono text-slate-400 uppercase tracking-wider flex items-center gap-2">
+                    <span class="w-2 h-2 rounded-full bg-cyan-400 animate-pulse"></span>
+                    Propagação de Onda Sonora
+                </div>
+                <canvas id="heroCanvas"></canvas>
+            </div>
+        </div>
+    </header>
+
+    <!-- CONTEÚDO PRINCIPAL -->
+    <main class="max-w-6xl mx-auto px-4 sm:px-6 py-16 space-y-24">
+
+        <!-- ========================================================= -->
+        <!-- SEÇÃO 1: ALTURA (AGUDO VS. GRAVE)                         -->
+        <!-- ========================================================= -->
+        <section id="altura" class="scroll-mt-24">
+            <div class="flex items-center gap-3 mb-4">
+                <span class="px-3 py-1 rounded-lg bg-cyan-500/20 border border-cyan-500/40 text-cyan-300 font-display font-bold text-sm">01</span>
+                <span class="text-cyan-400 font-semibold text-sm uppercase tracking-wider">Primeira Qualidade</span>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+                <!-- Coluna Teórica -->
+                <div class="lg:col-span-6 space-y-5">
+                    <h2 class="font-display text-3xl sm:text-4xl font-bold text-white">
+                        Altura <span class="text-cyan-400 font-normal text-2xl sm:text-3xl">(Agudo vs. Grave)</span>
+                    </h2>
+
+                    <p class="text-slate-300 text-base leading-relaxed">
+                        A <strong class="text-white">altura</strong> é a característica que define se o som é <strong class="text-cyan-300">fino (agudo)</strong> ou <strong class="text-cyan-300">grosso (grave)</strong>.
+                    </p>
+
+                    <div class="glass-card rounded-2xl p-5 space-y-4">
+                        <div class="flex items-start gap-3">
+                            <div class="p-2 rounded-lg bg-cyan-500/15 text-cyan-400 mt-0.5">
+                                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                                </svg>
+                            </div>
+                            <div>
+                                <h3 class="font-semibold text-white text-sm uppercase tracking-wide">Do que depende?</h3>
+                                <p class="text-slate-300 text-sm mt-1">
+                                    Da <strong class="text-cyan-300">frequência da onda</strong> (quantidade de vibrações por segundo, medida em <strong class="text-white">Hertz - Hz</strong>).
+                                </p>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
+                            <!-- Card Som Agudo -->
+                            <div class="p-4 rounded-xl bg-slate-900/80 border border-cyan-500/30">
+                                <div class="flex items-center justify-between mb-1.5">
+                                    <span class="font-display font-bold text-cyan-300">Som Agudo</span>
+                                    <span class="text-xs px-2 py-0.5 rounded bg-cyan-500/20 text-cyan-300 font-mono">Alta Hz</span>
+                                </div>
+                                <p class="text-xs text-slate-300 mb-2">Alta frequência (vibra rápido).</p>
+                                <p class="text-xs text-slate-400"><strong class="text-slate-200">Exemplos:</strong> apito, canto de passarinho, vozes mais finas.</p>
+                            </div>
+
+                            <!-- Card Som Grave -->
+                            <div class="p-4 rounded-xl bg-slate-900/80 border border-slate-700">
+                                <div class="flex items-center justify-between mb-1.5">
+                                    <span class="font-display font-bold text-sky-300">Som Grave</span>
+                                    <span class="text-xs px-2 py-0.5 rounded bg-slate-800 text-slate-300 font-mono">Baixa Hz</span>
+                                </div>
+                                <p class="text-xs text-slate-300 mb-2">Baixa frequência (vibra devagar).</p>
+                                <p class="text-xs text-slate-400"><strong class="text-slate-200">Exemplos:</strong> trovão, som de bumbo de bateria, vozes mais grossas.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Caixa de Dica Destacada ("Dica da Física") -->
+                    <div class="rounded-2xl p-5 bg-gradient-to-r from-cyan-950/80 to-slate-900 border-l-4 border-cyan-400 shadow-lg">
+                        <div class="flex items-start gap-3">
+                            <div class="p-2 rounded-xl bg-cyan-400/20 text-cyan-300 shrink-0">
+                                <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                                </svg>
+                            </div>
+                            <div>
+                                <h4 class="font-display font-bold text-cyan-300 text-sm uppercase tracking-wider mb-1">Dica da Física — Não confunda!</h4>
+                                <p class="text-sm text-slate-200 leading-relaxed">
+                                    Na física, dizer que o som está <strong>"alto"</strong> significa que ele é <strong>agudo</strong>, e <span class="underline decoration-cyan-400/60">não</span> que está com o volume forte.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Coluna Simulador Interativo de Altura -->
+                <div class="lg:col-span-6 glass-card rounded-3xl p-6 glow-cyan border border-cyan-500/30">
+                    <div class="flex flex-wrap items-center justify-between gap-2 mb-4">
+                        <div>
+                            <span class="text-xs font-mono text-cyan-400 uppercase tracking-wider">Simulador Interativo</span>
+                            <h3 class="font-display font-bold text-lg text-white">Frequência da Onda (Hz)</h3>
+                        </div>
+                        <span id="pitchBadge" class="px-3 py-1 rounded-full text-xs font-bold bg-cyan-500/20 text-cyan-300 border border-cyan-500/40">
+                            Som Agudo (750 Hz)
+                        </span>
+                    </div>
+
+                    <!-- Canvas Onda de Altura -->
+                    <div class="h-52 sm:h-60 rounded-2xl bg-navy-950 border border-slate-800 overflow-hidden relative mb-5">
+                        <div class="absolute top-3 left-3 z-10 text-[11px] font-mono text-slate-400 bg-slate-900/80 px-2.5 py-1 rounded-md border border-slate-800">
+                            Amplitude fixa • Variando Frequência
+                        </div>
+                        <canvas id="pitchCanvas"></canvas>
+                    </div>
+
+                    <!-- Botões Preset Agudo vs Grave -->
+                    <div class="grid grid-cols-2 gap-3 mb-5">
+                        <button onclick="setPitchPreset('agudo')" id="btnAgudo" class="p-3 rounded-xl font-semibold text-sm transition flex items-center justify-center gap-2 bg-cyan-500 text-slate-950 shadow-lg shadow-cyan-500/25">
+                            <span>🐦</span> Som Agudo (Alta Freq.)
+                        </button>
+                        <button onclick="setPitchPreset('grave')" id="btnGrave" class="p-3 rounded-xl font-semibold text-sm transition flex items-center justify-center gap-2 bg-slate-800 text-slate-300 hover:bg-slate-700 border border-slate-700">
+                            <span>🥁</span> Som Grave (Baixa Freq.)
+                        </button>
+                    </div>
+
+                    <!-- Slider de Frequência + Botão Ouvir -->
+                    <div class="p-4 rounded-2xl bg-slate-900/90 border border-slate-800 space-y-4">
+                        <div>
+                            <div class="flex justify-between text-xs font-medium text-slate-400 mb-2">
+                                <span>Grave (150 Hz)</span>
+                                <span class="text-cyan-300 font-mono font-bold" id="freqValueLabel">750 Hz</span>
+                                <span>Agudo (1200 Hz)</span>
+                            </div>
+                            <input type="range" id="freqSlider" min="150" max="1200" value="750" class="w-full slider-cyan" oninput="updatePitchFromSlider(this.value)">
+                        </div>
+
+                        <button onclick="toggleAudio('pitch')" id="audioBtn-pitch" class="w-full py-3 px-4 rounded-xl bg-cyan-500/15 hover:bg-cyan-500/25 border border-cyan-500/40 text-cyan-300 font-semibold text-sm transition flex items-center justify-center gap-2">
+                            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
+                            </svg>
+                            <span>Ouvir Frequência Atual</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ========================================================= -->
+        <!-- SEÇÃO 2: INTENSIDADE (FORTE VS. FRACO)                    -->
+        <!-- ========================================================= -->
+        <section id="intensidade" class="scroll-mt-24">
+            <div class="flex items-center gap-3 mb-4">
+                <span class="px-3 py-1 rounded-lg bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 font-display font-bold text-sm">02</span>
+                <span class="text-emerald-400 font-semibold text-sm uppercase tracking-wider">Segunda Qualidade</span>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+                <!-- Coluna Simulador Interativo de Intensidade (Alternado no Desktop para dinamismo visual) -->
+                <div class="lg:col-span-6 order-2 lg:order-1 glass-card rounded-3xl p-6 glow-emerald border border-emerald-500/30">
+                    <div class="flex flex-wrap items-center justify-between gap-2 mb-4">
+                        <div>
+                            <span class="text-xs font-mono text-emerald-400 uppercase tracking-wider">Simulador Interativo</span>
+                            <h3 class="font-display font-bold text-lg text-white">Amplitude & Decibéis (dB)</h3>
+                        </div>
+                        <span id="intensityBadge" class="px-3 py-1 rounded-full text-xs font-bold bg-amber-500/20 text-amber-300 border border-amber-500/40">
+                            Som Forte (95 dB)
+                        </span>
+                    </div>
+
+                    <!-- Canvas Onda de Intensidade -->
+                    <div class="h-52 sm:h-60 rounded-2xl bg-navy-950 border border-slate-800 overflow-hidden relative mb-5">
+                        <div class="absolute top-3 left-3 z-10 text-[11px] font-mono text-slate-400 bg-slate-900/80 px-2.5 py-1 rounded-md border border-slate-800">
+                            Frequência fixa • Variando Amplitude (Energia)
+                        </div>
+                        <canvas id="intensityCanvas"></canvas>
+                    </div>
+
+                    <!-- Botões Forte vs Fraco -->
+                    <div class="grid grid-cols-2 gap-3 mb-5">
+                        <button onclick="setIntensityPreset('forte')" id="btnForte" class="p-3 rounded-xl font-semibold text-sm transition flex items-center justify-center gap-2 bg-emerald-500 text-slate-950 shadow-lg shadow-emerald-500/25">
+                            <span>🔊</span> Som Forte (Alta Amp.)
+                        </button>
+                        <button onclick="setIntensityPreset('fraco')" id="btnFraco" class="p-3 rounded-xl font-semibold text-sm transition flex items-center justify-center gap-2 bg-slate-800 text-slate-300 hover:bg-slate-700 border border-slate-700">
+                            <span>🤫</span> Som Fraco (Baixa Amp.)
+                        </button>
+                    </div>
+
+                    <!-- Medidor Visual de Decibéis (dB) + Slider -->
+                    <div class="p-4 rounded-2xl bg-slate-900/90 border border-slate-800 space-y-4">
+                        <div>
+                            <div class="flex justify-between items-center text-xs font-medium mb-2">
+                                <span class="text-slate-400">Sussurro (20 dB)</span>
+                                <span id="dbStatusText" class="font-mono font-bold text-amber-400">95 dB — Zona de Risco (>85 dB)</span>
+                                <span class="text-slate-400">Explosão (120 dB)</span>
+                            </div>
+
+                            <!-- Barra de Nível dB com marcação em 85 dB -->
+                            <div class="relative w-full h-3 bg-slate-800 rounded-full overflow-hidden mb-3">
+                                <div id="dbMeterFill" class="h-full bg-gradient-to-r from-emerald-400 via-amber-400 to-rose-500 transition-all duration-150" style="width: 75%;"></div>
+                                <!-- Marcador de 85 dB (aprox 65% da escala 20-120) -->
+                                <div class="absolute top-0 bottom-0 w-0.5 bg-white z-10" style="left: 65%;" title="Limite seguro: 85 dB"></div>
+                            </div>
+
+                            <input type="range" id="dbSlider" min="20" max="120" value="95" class="w-full slider-emerald" oninput="updateIntensityFromSlider(this.value)">
+                        </div>
+
+                        <button onclick="toggleAudio('intensity')" id="audioBtn-intensity" class="w-full py-3 px-4 rounded-xl bg-emerald-500/15 hover:bg-emerald-500/25 border border-emerald-500/40 text-emerald-300 font-semibold text-sm transition flex items-center justify-center gap-2">
+                            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
+                            </svg>
+                            <span>Ouvir Intensidade (Volume)</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Coluna Teórica -->
+                <div class="lg:col-span-6 order-1 lg:order-2 space-y-5">
+                    <h2 class="font-display text-3xl sm:text-4xl font-bold text-white">
+                        Intensidade <span class="text-emerald-400 font-normal text-2xl sm:text-3xl">(Forte vs. Fraco)</span>
+                    </h2>
+
+                    <p class="text-slate-300 text-base leading-relaxed">
+                        A <strong class="text-white">intensidade</strong> é o que no dia a dia chamamos de <strong class="text-emerald-300">volume</strong>. Ela indica se o som é forte ou fraco.
+                    </p>
+
+                    <div class="glass-card rounded-2xl p-5 space-y-4">
+                        <div class="flex items-start gap-3">
+                            <div class="p-2 rounded-lg bg-emerald-500/15 text-emerald-400 mt-0.5">
+                                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                                </svg>
+                            </div>
+                            <div>
+                                <h3 class="font-semibold text-white text-sm uppercase tracking-wide">Do que depende?</h3>
+                                <p class="text-slate-300 text-sm mt-1">
+                                    Da <strong class="text-emerald-300">amplitude da onda</strong> (quantidade de energia transportada pela onda sonora). Medida em <strong class="text-white">Decibéis (dB)</strong>.
+                                </p>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
+                            <!-- Card Som Forte -->
+                            <div class="p-4 rounded-xl bg-slate-900/80 border border-emerald-500/30">
+                                <div class="flex items-center justify-between mb-1.5">
+                                    <span class="font-display font-bold text-emerald-300">Som Forte</span>
+                                    <span class="text-xs px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 font-mono">Alta Amp.</span>
+                                </div>
+                                <p class="text-xs text-slate-300 mb-2">Muita energia e maior amplitude.</p>
+                                <p class="text-xs text-slate-400"><strong class="text-slate-200">Exemplos:</strong> barulho de uma explosão, caixa de som no máximo.</p>
+                            </div>
+
+                            <!-- Card Som Fraco -->
+                            <div class="p-4 rounded-xl bg-slate-900/80 border border-slate-700">
+                                <div class="flex items-center justify-between mb-1.5">
+                                    <span class="font-display font-bold text-teal-300">Som Fraco</span>
+                                    <span class="text-xs px-2 py-0.5 rounded bg-slate-800 text-slate-300 font-mono">Baixa Amp.</span>
+                                </div>
+                                <p class="text-xs text-slate-300 mb-2">Pouca energia e menor amplitude.</p>
+                                <p class="text-xs text-slate-400"><strong class="text-slate-200">Exemplos:</strong> um sussurro, o som da respiração.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Alerta Visual de Saúde Auditiva (> 85 dB) -->
+                    <div class="rounded-2xl p-5 bg-gradient-to-r from-amber-950/70 to-rose-950/50 border-l-4 border-amber-400 shadow-lg">
+                        <div class="flex items-start gap-3">
+                            <div class="p-2 rounded-xl bg-amber-400/20 text-amber-300 shrink-0">
+                                <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                                </svg>
+                            </div>
+                            <div>
+                                <h4 class="font-display font-bold text-amber-300 text-sm uppercase tracking-wider mb-1">Atenção à Saúde Auditiva (Medida em dB)</h4>
+                                <p class="text-sm text-slate-200 leading-relaxed">
+                                    A intensidade é medida em <strong>Decibéis (dB)</strong>. Sons acima de <strong>85 dB</strong> por muito tempo podem fazer mal à audição e causar danos permanentes.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ========================================================= -->
+        <!-- SEÇÃO 3: TIMBRE (A "ASSINATURA" DO SOM)                   -->
+        <!-- ========================================================= -->
+        <section id="timbre" class="scroll-mt-24">
+            <div class="flex items-center gap-3 mb-4">
+                <span class="px-3 py-1 rounded-lg bg-violet-500/20 border border-violet-500/40 text-violet-300 font-display font-bold text-sm">03</span>
+                <span class="text-violet-400 font-semibold text-sm uppercase tracking-wider">Terceira Qualidade</span>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+                <!-- Coluna Teórica -->
+                <div class="lg:col-span-6 space-y-5">
+                    <h2 class="font-display text-3xl sm:text-4xl font-bold text-white">
+                        Timbre <span class="text-violet-400 font-normal text-2xl sm:text-3xl">(A "Assinatura" do Som)</span>
+                    </h2>
+
+                    <p class="text-slate-300 text-base leading-relaxed">
+                        O <strong class="text-white">timbre</strong> funciona como a identidade ou a <strong class="text-violet-300">"impressão digital"</strong> da fonte sonora. É ele que nos faz reconhecer quem ou o que está produzindo o som.
+                    </p>
+
+                    <div class="glass-card rounded-2xl p-5 space-y-4">
+                        <div class="flex items-start gap-3">
+                            <div class="p-2 rounded-lg bg-violet-500/15 text-violet-400 mt-0.5">
+                                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01" />
+                                </svg>
+                            </div>
+                            <div>
+                                <h3 class="font-semibold text-white text-sm uppercase tracking-wide">Do que depende?</h3>
+                                <p class="text-slate-300 text-sm mt-1">
+                                    Do <strong class="text-violet-300">formato da onda sonora</strong> (composição dos harmônicos), que muda de acordo com o instrumento ou a voz de cada pessoa.
+                                </p>
+                            </div>
+                        </div>
+
+                        <div class="p-4 rounded-xl bg-slate-900/80 border border-violet-500/30 space-y-2">
+                            <h4 class="font-display font-bold text-violet-300 text-sm">Exemplo Clássico: Violão vs. Piano</h4>
+                            <p class="text-xs sm:text-sm text-slate-300 leading-relaxed">
+                                Se um <strong class="text-white">violão</strong> e um <strong class="text-white">piano</strong> tocarem a <strong class="text-violet-300">mesma nota musical</strong> com o <strong class="text-violet-300">mesmo volume</strong>, você consegue identificar qual é qual justamente por causa do timbre de cada um.
+                            </p>
+                        </div>
+
+                        <div class="p-4 rounded-xl bg-slate-900/60 border border-slate-800">
+                            <h4 class="font-semibold text-slate-200 text-xs uppercase tracking-wider mb-1">Resumo da Qualidade</h4>
+                            <p class="text-xs sm:text-sm text-slate-300">
+                                Permite diferenciar dois sons de <strong>mesma altura (frequência)</strong> e <strong>mesma intensidade (volume)</strong>, mas que foram emitidos por fontes ou instrumentos diferentes.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Coluna Simulador Interativo de Timbre -->
+                <div class="lg:col-span-6 glass-card rounded-3xl p-6 glow-violet border border-violet-500/30">
+                    <div class="flex flex-wrap items-center justify-between gap-2 mb-4">
+                        <div>
+                            <span class="text-xs font-mono text-violet-400 uppercase tracking-wider">Simulador Interativo</span>
+                            <h3 class="font-display font-bold text-lg text-white">Formato da Onda (Mesma Nota: Lá 440Hz)</h3>
+                        </div>
+                        <span id="timbreBadge" class="px-3 py-1 rounded-full text-xs font-bold bg-violet-500/20 text-violet-300 border border-violet-500/40">
+                            Violão (Harmônicos Ricos)
+                        </span>
+                    </div>
+
+                    <!-- Canvas Onda de Timbre -->
+                    <div class="h-52 sm:h-60 rounded-2xl bg-navy-950 border border-slate-800 overflow-hidden relative mb-5">
+                        <div class="absolute top-3 left-3 z-10 text-[11px] font-mono text-slate-400 bg-slate-900/80 px-2.5 py-1 rounded-md border border-slate-800">
+                            Mesma Frequência & Amplitude • Formato Diferente
+                        </div>
+                        <canvas id="timbreCanvas"></canvas>
+                    </div>
+
+                    <!-- Botões de Instrumentos -->
+                    <div class="grid grid-cols-3 gap-2.5 mb-5">
+                        <button onclick="setTimbrePreset('violao')" id="btnViolao" class="p-3 rounded-xl font-semibold text-xs sm:text-sm transition flex flex-col items-center justify-center gap-1 bg-violet-500 text-white shadow-lg shadow-violet-500/25">
+                            <span class="text-lg">🎸</span>
+                            <span>Violão</span>
+                        </button>
+                        <button onclick="setTimbrePreset('piano')" id="btnPiano" class="p-3 rounded-xl font-semibold text-xs sm:text-sm transition flex flex-col items-center justify-center gap-1 bg-slate-800 text-slate-300 hover:bg-slate-700 border border-slate-700">
+                            <span class="text-lg">🎹</span>
+                            <span>Piano</span>
+                        </button>
+                        <button onclick="setTimbrePreset('diapasao')" id="btnDiapasao" class="p-3 rounded-xl font-semibold text-xs sm:text-sm transition flex flex-col items-center justify-center gap-1 bg-slate-800 text-slate-300 hover:bg-slate-700 border border-slate-700">
+                            <span class="text-lg">🎵</span>
+                            <span>Diapasão (Pura)</span>
+                        </button>
+                    </div>
+
+                    <div class="p-4 rounded-2xl bg-slate-900/90 border border-slate-800 space-y-3">
+                        <p id="timbreDescription" class="text-xs text-slate-300 leading-relaxed">
+                            <strong class="text-violet-300">Violão:</strong> Onda assimétrica com harmônicos pares e ímpares pronunciados, gerando um som encorpado e vibrante.
+                        </p>
+
+                        <button onclick="toggleAudio('timbre')" id="audioBtn-timbre" class="w-full py-3 px-4 rounded-xl bg-violet-500/15 hover:bg-violet-500/25 border border-violet-500/40 text-violet-300 font-semibold text-sm transition flex items-center justify-center gap-2">
+                            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
+                            </svg>
+                            <span>Ouvir Nota Lá (440 Hz) neste Timbre</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ========================================================= -->
+        <!-- SEÇÃO FINAL: QUADRO RESUMO & MINI-QUIZ INTERATIVO         -->
+        <!-- ========================================================= -->
+        <section id="resumo" class="scroll-mt-24 pt-6 border-t border-slate-800/80 space-y-16">
+            
+            <!-- Tabela Comparativa -->
+            <div>
+                <div class="text-center max-w-2xl mx-auto mb-8">
+                    <span class="text-xs font-mono text-cyan-400 uppercase tracking-wider">Síntese para Revisão</span>
+                    <h2 class="font-display text-2xl sm:text-3xl font-bold text-white mt-1">Quadro Comparativo das 3 Qualidades</h2>
+                </div>
+
+                <div class="glass-card rounded-2xl overflow-hidden border border-slate-700/70 shadow-xl">
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="bg-slate-900/90 border-b border-slate-700 text-xs font-display uppercase tracking-wider text-slate-300">
+                                    <th class="py-4 px-6">Qualidade Fisiológica</th>
+                                    <th class="py-4 px-6">Grandeza Física Associada</th>
+                                    <th class="py-4 px-6">Diferenciação</th>
+                                    <th class="py-4 px-6">Exemplos Práticos</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-slate-800 text-sm">
+                                <tr class="hover:bg-slate-800/40 transition">
+                                    <td class="py-4 px-6 font-display font-bold text-cyan-400">1. Altura</td>
+                                    <td class="py-4 px-6 text-white font-medium">Frequência (Hz)</td>
+                                    <td class="py-4 px-6 text-slate-300">Som Agudo (fino) vs. Som Grave (grosso)</td>
+                                    <td class="py-4 px-6 text-slate-400">Apito, passarinho (agudo) vs. Trovão, bumbo (grave)</td>
+                                </tr>
+                                <tr class="hover:bg-slate-800/40 transition">
+                                    <td class="py-4 px-6 font-display font-bold text-emerald-400">2. Intensidade</td>
+                                    <td class="py-4 px-6 text-white font-medium">Amplitude / Energia (dB)</td>
+                                    <td class="py-4 px-6 text-slate-300">Som Forte vs. Som Fraco ("volume")</td>
+                                    <td class="py-4 px-6 text-slate-400">Explosão (forte) vs. Sussurro, respiração (fraco)</td>
+                                </tr>
+                                <tr class="hover:bg-slate-800/40 transition">
+                                    <td class="py-4 px-6 font-display font-bold text-violet-400">3. Timbre</td>
+                                    <td class="py-4 px-6 text-white font-medium">Formato da Onda</td>
+                                    <td class="py-4 px-6 text-slate-300">Identidade / "Impressão digital" da fonte</td>
+                                    <td class="py-4 px-6 text-slate-400">Violão vs. Piano tocando a mesma nota e volume</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Mini-Quiz Rápido -->
+            <div class="max-w-3xl mx-auto">
+                <div class="glass-card rounded-3xl p-6 sm:p-8 border border-slate-700/80 shadow-2xl">
+                    <div class="flex items-center justify-between mb-6">
+                        <div>
+                            <span class="text-xs font-mono text-emerald-400 uppercase tracking-wider">Teste seus conhecimentos</span>
+                            <h3 class="font-display text-2xl font-bold text-white mt-0.5">Mini-Quiz Rápido</h3>
+                        </div>
+                        <span id="quizScoreBadge" class="px-3.5 py-1.5 rounded-full bg-slate-800 border border-slate-700 text-xs font-bold text-slate-300">
+                            0 / 3 Acertos
+                        </span>
+                    </div>
+
+                    <div id="quizContainer" class="space-y-6">
+                        <!-- Pergunta 1 -->
+                        <div class="p-5 rounded-2xl bg-slate-900/70 border border-slate-800 space-y-3" id="q1-box">
+                            <p class="font-semibold text-white text-sm sm:text-base">
+                                1. Na Física, quando alguém diz que um som é muito "alto", o que isso significa tecnicamente?
+                            </p>
+                            <div class="grid grid-cols-1 gap-2">
+                                <button onclick="checkAnswer(1, 0, this)" class="quiz-opt-1 text-left p-3 rounded-xl bg-slate-800/80 hover:bg-slate-700/80 border border-slate-700 text-sm text-slate-200 transition">
+                                    a) Que o volume está no máximo e com grande amplitude.
+                                </button>
+                                <button onclick="checkAnswer(1, 1, this)" class="quiz-opt-1 text-left p-3 rounded-xl bg-slate-800/80 hover:bg-slate-700/80 border border-slate-700 text-sm text-slate-200 transition">
+                                    b) Que o som é agudo, ou seja, possui alta frequência (vibra rápido).
+                                </button>
+                                <button onclick="checkAnswer(1, 2, this)" class="quiz-opt-1 text-left p-3 rounded-xl bg-slate-800/80 hover:bg-slate-700/80 border border-slate-700 text-sm text-slate-200 transition">
+                                    c) Que o som ultrapassou o limite seguro de 85 decibéis.
+                                </button>
+                            </div>
+                            <p id="q1-feedback" class="hidden text-xs font-medium pt-1"></p>
+                        </div>
+
+                        <!-- Pergunta 2 -->
+                        <div class="p-5 rounded-2xl bg-slate-900/70 border border-slate-800 space-y-3" id="q2-box">
+                            <p class="font-semibold text-white text-sm sm:text-base">
+                                2. Um violão e um piano tocam exatamente a mesma nota musical (mesma frequência) com o mesmo volume (mesma amplitude). Qual qualidade permite diferenciar os dois instrumentos?
+                            </p>
+                            <div class="grid grid-cols-1 gap-2">
+                                <button onclick="checkAnswer(2, 0, this)" class="quiz-opt-2 text-left p-3 rounded-xl bg-slate-800/80 hover:bg-slate-700/80 border border-slate-700 text-sm text-slate-200 transition">
+                                    a) Intensidade
+                                </button>
+                                <button onclick="checkAnswer(2, 1, this)" class="quiz-opt-2 text-left p-3 rounded-xl bg-slate-800/80 hover:bg-slate-700/80 border border-slate-700 text-sm text-slate-200 transition">
+                                    b) Altura
+                                </button>
+                                <button onclick="checkAnswer(2, 2, this)" class="quiz-opt-2 text-left p-3 rounded-xl bg-slate-800/80 hover:bg-slate-700/80 border border-slate-700 text-sm text-slate-200 transition">
+                                    c) Timbre
+                                </button>
+                            </div>
+                            <p id="q2-feedback" class="hidden text-xs font-medium pt-1"></p>
+                        </div>
+
+                        <!-- Pergunta 3 -->
+                        <div class="p-5 rounded-2xl bg-slate-900/70 border border-slate-800 space-y-3" id="q3-box">
+                            <p class="font-semibold text-white text-sm sm:text-base">
+                                3. A intensidade sonora está diretamente relacionada a qual característica da onda e a partir de qual valor em decibéis (dB) pode prejudicar a audição por exposição prolongada?
+                            </p>
+                            <div class="grid grid-cols-1 gap-2">
+                                <button onclick="checkAnswer(3, 0, this)" class="quiz-opt-3 text-left p-3 rounded-xl bg-slate-800/80 hover:bg-slate-700/80 border border-slate-700 text-sm text-slate-200 transition">
+                                    a) Amplitude da onda; acima de 85 dB.
+                                </button>
+                                <button onclick="checkAnswer(3, 1, this)" class="quiz-opt-3 text-left p-3 rounded-xl bg-slate-800/80 hover:bg-slate-700/80 border border-slate-700 text-sm text-slate-200 transition">
+                                    b) Frequência da onda; acima de 20 dB.
+                                </button>
+                                <button onclick="checkAnswer(3, 2, this)" class="quiz-opt-3 text-left p-3 rounded-xl bg-slate-800/80 hover:bg-slate-700/80 border border-slate-700 text-sm text-slate-200 transition">
+                                    c) Formato da onda; acima de 440 dB.
+                                </button>
+                            </div>
+                            <p id="q3-feedback" class="hidden text-xs font-medium pt-1"></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="border-t border-slate-800/80 py-8 text-center text-slate-500 text-xs">
+        <div class="max-w-6xl mx-auto px-4">
+            <p>AcústicaLab • Material Educativo Interativo sobre Qualidades Fisiológicas do Som.</p>
+        </div>
+    </footer>
+
+    <!-- SCRIPTS DE ANIMAÇÃO DAS ONDAS, ÁUDIO (WEB AUDIO API) E QUIZ -->
+    <script>
+        // ==========================================
+        // 1. ESTADO DOS SIMULADORES VISUAIS
+        // ==========================================
+        const state = {
+            pitchFreq: 750,        // Hz (150 a 1200)
+            intensityDb: 95,       // dB (20 a 120)
+            timbreType: 'violao',  // 'violao' | 'piano' | 'diapasao'
+            phase: 0
+        };
+
+        // ==========================================
+        // 2. CONFIGURAÇÃO RESPONSIVA DOS CANVAS
+        // ==========================================
+        const canvases = {
+            hero: document.getElementById('heroCanvas'),
+            pitch: document.getElementById('pitchCanvas'),
+            intensity: document.getElementById('intensityCanvas'),
+            timbre: document.getElementById('timbreCanvas')
+        };
+
+        function resizeCanvases() {
+            Object.values(canvases).forEach(canvas => {
+                if (!canvas) return;
+                const rect = canvas.parentElement.getBoundingClientRect();
+                const dpr = window.devicePixelRatio || 1;
+                canvas.width = rect.width * dpr;
+                canvas.height = rect.height * dpr;
+                const ctx = canvas.getContext('2d');
+                ctx.scale(dpr, dpr);
+            });
+        }
+
+        window.addEventListener('resize', resizeCanvases);
+
+        // ==========================================
+        // 3. FUNÇÕES DE DESENHO DAS ONDAS SONORAS
+        // ==========================================
+        function drawGrid(ctx, width, height) {
+            // Linha central de equilíbrio
+            ctx.strokeStyle = 'rgba(148, 163, 184, 0.18)';
+            ctx.lineWidth = 1;
+            ctx.setLineDash([4, 4]);
+            ctx.beginPath();
+            ctx.moveTo(0, height / 2);
+            ctx.lineTo(width, height / 2);
+            ctx.stroke();
+            ctx.setLineDash([]);
+        }
+
+        function drawHeroWave(ctx, w, h, t) {
+            ctx.clearRect(0, 0, w, h);
+            drawGrid(ctx, w, h);
+
+            const waves = [
+                { amp: h * 0.28, freq: 0.02, speed: 0.04, color: 'rgba(6, 182, 212, 0.75)', width: 2.5 },
+                { amp: h * 0.18, freq: 0.035, speed: -0.03, color: 'rgba(139, 92, 246, 0.55)', width: 2 },
+                { amp: h * 0.12, freq: 0.015, speed: 0.02, color: 'rgba(16, 185, 129, 0.45)', width: 1.5 }
+            ];
+
+            waves.forEach(wave => {
+                ctx.beginPath();
+                ctx.strokeStyle = wave.color;
+                ctx.lineWidth = wave.width;
+                for (let x = 0; x <= w; x += 2) {
+                    const envelope = Math.sin((x / w) * Math.PI); // Suaviza nas bordas
+                    const y = h / 2 + Math.sin(x * wave.freq + t * wave.speed * 30) * wave.amp * envelope;
+                    if (x === 0) ctx.moveTo(x, y);
+                    else ctx.lineTo(x, y);
+                }
+                ctx.stroke();
+            });
+        }
+
+        function drawPitchWave(ctx, w, h, t) {
+            ctx.clearRect(0, 0, w, h);
+            drawGrid(ctx, w, h);
+
+            // Frequência visual proporcional ao slider (150Hz -> 1200Hz)
+            const visualFreq = 0.015 + ((state.pitchFreq - 150) / 1050) * 0.095;
+            const fixedAmp = h * 0.34;
+
+            ctx.beginPath();
+            ctx.strokeStyle = '#06B6D4';
+            ctx.lineWidth = 3;
+            ctx.shadowColor = 'rgba(6, 182, 212, 0.6)';
+            ctx.shadowBlur = 10;
+
+            for (let x = 0; x <= w; x += 2) {
+                const y = h / 2 + Math.sin(x * visualFreq - t * 3.5) * fixedAmp;
+                if (x === 0) ctx.moveTo(x, y);
+                else ctx.lineTo(x, y);
+            }
+            ctx.stroke();
+            ctx.shadowBlur = 0;
+        }
+
+        function drawIntensityWave(ctx, w, h, t) {
+            ctx.clearRect(0, 0, w, h);
+            drawGrid(ctx, w, h);
+
+            // Amplitude visual proporcional aos Decibéis (20dB -> 120dB)
+            const normAmp = (state.intensityDb - 15) / 110;
+            const visualAmp = Math.max(6, normAmp * (h * 0.42));
+            const fixedFreq = 0.04;
+
+            // Cor muda para âmbar/vermelho se passar de 85 dB
+            const isDanger = state.intensityDb > 85;
+            const strokeColor = isDanger ? '#F59E0B' : '#10B981';
+
+            ctx.beginPath();
+            ctx.strokeStyle = strokeColor;
+            ctx.lineWidth = 3;
+            ctx.shadowColor = isDanger ? 'rgba(245, 158, 11, 0.6)' : 'rgba(16, 185, 129, 0.6)';
+            ctx.shadowBlur = 10;
+
+            for (let x = 0; x <= w; x += 2) {
+                const y = h / 2 + Math.sin(x * fixedFreq - t * 3) * visualAmp;
+                if (x === 0) ctx.moveTo(x, y);
+                else ctx.lineTo(x, y);
+            }
+            ctx.stroke();
+            ctx.shadowBlur = 0;
+        }
+
+        function drawTimbreWave(ctx, w, h, t) {
+            ctx.clearRect(0, 0, w, h);
+            drawGrid(ctx, w, h);
+
+            // Mesma frequência fundamental e mesma amplitude máxima
+            const baseFreq = 0.032;
+            const baseAmp = h * 0.32;
+
+            ctx.beginPath();
+            ctx.strokeStyle = '#A78BFA';
+            ctx.lineWidth = 3;
+            ctx.shadowColor = 'rgba(139, 92, 246, 0.65)';
+            ctx.shadowBlur = 10;
+
+            for (let x = 0; x <= w; x += 2) {
+                const theta = x * baseFreq - t * 3;
+                let signal = 0;
+
+                if (state.timbreType === 'diapasao') {
+                    // Onda senoidal pura
+                    signal = Math.sin(theta);
+                } else if (state.timbreType === 'violao') {
+                    // Harmônicos ricos e assimétricos característicos de corda dedilhada
+                    signal = 0.62 * Math.sin(theta) +
+                             0.28 * Math.sin(2 * theta + 0.4) +
+                             0.16 * Math.sin(3 * theta) +
+                             0.09 * Math.sin(4 * theta);
+                } else if (state.timbreType === 'piano') {
+                    // Harmônicos de corda percutida (mais brilhante nos ímpares e ataque definido)
+                    signal = 0.68 * Math.sin(theta) +
+                             0.22 * Math.cos(2 * theta) +
+                             0.18 * Math.sin(3 * theta) -
+                             0.08 * Math.sin(5 * theta);
+                }
+
+                const y = h / 2 + signal * baseAmp;
+                if (x === 0) ctx.moveTo(x, y);
+                else ctx.lineTo(x, y);
+            }
+            ctx.stroke();
+            ctx.shadowBlur = 0;
+        }
+
+        function animateLoop() {
+            state.phase += 0.04;
+
+            if (canvases.hero) {
+                const r = canvases.hero.parentElement.getBoundingClientRect();
+                drawHeroWave(canvases.hero.getContext('2d'), r.width, r.height, state.phase);
+            }
+            if (canvases.pitch) {
+                const r = canvases.pitch.parentElement.getBoundingClientRect();
+                drawPitchWave(canvases.pitch.getContext('2d'), r.width, r.height, state.phase);
+            }
+            if (canvases.intensity) {
+                const r = canvases.intensity.parentElement.getBoundingClientRect();
+                drawIntensityWave(canvases.intensity.getContext('2d'), r.width, r.height, state.phase);
+            }
+            if (canvases.timbre) {
+                const r = canvases.timbre.parentElement.getBoundingClientRect();
+                drawTimbreWave(canvases.timbre.getContext('2d'), r.width, r.height, state.phase);
+            }
+
+            requestAnimationFrame(animateLoop);
+        }
+
+        // ==========================================
+        // 4. CONTROLES INTERATIVOS DOS SIMULADORES
+        // ==========================================
+        function setPitchPreset(type) {
+            const btnAgudo = document.getElementById('btnAgudo');
+            const btnGrave = document.getElementById('btnGrave');
+            const slider = document.getElementById('freqSlider');
+
+            if (type === 'agudo') {
+                state.pitchFreq = 880;
+                slider.value = 880;
+                btnAgudo.className = "p-3 rounded-xl font-semibold text-sm transition flex items-center justify-center gap-2 bg-cyan-500 text-slate-950 shadow-lg shadow-cyan-500/25";
+                btnGrave.className = "p-3 rounded-xl font-semibold text-sm transition flex items-center justify-center gap-2 bg-slate-800 text-slate-300 hover:bg-slate-700 border border-slate-700";
+            } else {
+                state.pitchFreq = 220;
+                slider.value = 220;
+                btnGrave.className = "p-3 rounded-xl font-semibold text-sm transition flex items-center justify-center gap-2 bg-cyan-500 text-slate-950 shadow-lg shadow-cyan-500/25";
+                btnAgudo.className = "p-3 rounded-xl font-semibold text-sm transition flex items-center justify-center gap-2 bg-slate-800 text-slate-300 hover:bg-slate-700 border border-slate-700";
+            }
+            updatePitchLabels();
+            updateLiveAudioParams();
+        }
+
+        function updatePitchFromSlider(val) {
+            state.pitchFreq = Number(val);
+            updatePitchLabels();
+            updateLiveAudioParams();
+        }
+
+        function updatePitchLabels() {
+            const f = state.pitchFreq;
+            document.getElementById('freqValueLabel').textContent = `${f} Hz`;
+            const labelTipo = f >= 500 ? 'Som Agudo' : 'Som Grave';
+            document.getElementById('pitchBadge').textContent = `labelTipo({f} Hz)`;
+        }
+
+        function setIntensityPreset(type) {
+            const btnForte = document.getElementById('btnForte');
+            const btnFraco = document.getElementById('btnFraco');
+            const slider = document.getElementById('dbSlider');
+
+            if (type === 'forte') {
+                state.intensityDb = 95;
+                slider.value = 95;
+                btnForte.className = "p-3 rounded-xl font-semibold text-sm transition flex items-center justify-center gap-2 bg-emerald-500 text-slate-950 shadow-lg shadow-emerald-500/25";
+                btnFraco.className = "p-3 rounded-xl font-semibold text-sm transition flex items-center justify-center gap-2 bg-slate-800 text-slate-300 hover:bg-slate-700 border border-slate-700";
+            } else {
+                state.intensityDb = 35;
+                slider.value = 35;
+                btnFraco.className = "p-3 rounded-xl font-semibold text-sm transition flex items-center justify-center gap-2 bg-emerald-500 text-slate-950 shadow-lg shadow-emerald-500/25";
+                btnForte.className = "p-3 rounded-xl font-semibold text-sm transition flex items-center justify-center gap-2 bg-slate-800 text-slate-300 hover:bg-slate-700 border border-slate-700";
+            }
+            updateIntensityLabels();
+            updateLiveAudioParams();
+        }
+
+        function updateIntensityFromSlider(val) {
+            state.intensityDb = Number(val);
+            updateIntensityLabels();
+            updateLiveAudioParams();
+        }
+
+        function updateIntensityLabels() {
+            const db = state.intensityDb;
+            const percent = ((db - 20) / 100) * 100;
+            document.getElementById('dbMeterFill').style.width = `${percent}%`;
+
+            const badge = document.getElementById('intensityBadge');
+            const statusText = document.getElementById('dbStatusText');
+
+            if (db > 85) {
+                badge.textContent = `Som Forte (${db} dB)`;
+                badge.className = "px-3 py-1 rounded-full text-xs font-bold bg-amber-500/20 text-amber-300 border border-amber-500/40";
+                statusText.textContent = `${db} dB — Zona de Risco (>85 dB)`;
+                statusText.className = "font-mono font-bold text-amber-400";
+            } else if (db >= 55) {
+                badge.textContent = `Intensidade Moderada (${db} dB)`;
+                badge.className = "px-3 py-1 rounded-full text-xs font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/40";
+                statusText.textContent = `${db} dB — Nível Seguro`;
+                statusText.className = "font-mono font-bold text-emerald-400";
+            } else {
+                badge.textContent = `Som Fraco (${db} dB)`;
+                badge.className = "px-3 py-1 rounded-full text-xs font-bold bg-teal-500/20 text-teal-300 border border-teal-500/40";
+                statusText.textContent = `${db} dB — Nível Seguro`;
+                statusText.className = "font-mono font-bold text-teal-400";
+            }
+        }
+
+        function setTimbrePreset(type) {
+            state.timbreType = type;
+            const buttons = {
+                violao: document.getElementById('btnViolao'),
+                piano: document.getElementById('btnPiano'),
+                diapasao: document.getElementById('btnDiapasao')
+            };
+
+            Object.keys(buttons).forEach(key => {
+                if (key === type) {
+                    buttons[key].className = "p-3 rounded-xl font-semibold text-xs sm:text-sm transition flex flex-col items-center justify-center gap-1 bg-violet-500 text-white shadow-lg shadow-violet-500/25";
+                } else {
+                    buttons[key].className = "p-3 rounded-xl font-semibold text-xs sm:text-sm transition flex flex-col items-center justify-center gap-1 bg-slate-800 text-slate-300 hover:bg-slate-700 border border-slate-700";
+                }
+            });
+
+            const badge = document.getElementById('timbreBadge');
+            const desc = document.getElementById('timbreDescription');
+
+            if (type === 'violao') {
+                badge.textContent = "Violão (Harmônicos Ricos)";
+                desc.innerHTML = `<strong class="text-violet-300">Violão:</strong> Onda assimétrica com harmônicos pares e ímpares pronunciados, gerando um som encorpado e vibrante.`;
+            } else if (type === 'piano') {
+                badge.textContent = "Piano (Corda Percutida)";
+                desc.innerHTML = `<strong class="text-violet-300">Piano:</strong> Onda complexa com brilho característico da percussão do martelo na corda, mantendo a exata mesma frequência (440 Hz).`;
+            } else {
+                badge.textContent = "Diapasão (Onda Senoidal Pura)";
+                desc.innerHTML = `<strong class="text-violet-300">Diapasão:</strong> Onda senoidal quase pura, sem harmônicos secundários, produzindo um som limpo e simples.`;
+            }
+
+            if (activeAudioMode === 'timbre') {
+                stopAllAudio();
+                toggleAudio('timbre');
+            }
+        }
+
+        // ==========================================
+        // 5. SINTETIZADOR DE ÁUDIO (WEB AUDIO API)
+        // ==========================================
+        let audioCtx = null;
+        let currentOscillators = [];
+        let currentGain = null;
+        let activeAudioMode = null;
+
+        function initAudioContext() {
+            if (!audioCtx) {
+                const AudioContext = window.AudioContext || window.webkitAudioContext;
+                audioCtx = new AudioContext();
+            }
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+        }
+
+        function stopAllAudio() {
+            currentOscillators.forEach(osc => {
+                try { osc.stop(); osc.disconnect(); } catch (e) {}
+            });
+            currentOscillators = [];
+            if (currentGain) {
+                try { currentGain.disconnect(); } catch (e) {}
+                currentGain = null;
+            }
+
+            // Reset visual dos botões
+            const labels = {
+                pitch: 'Ouvir Frequência Atual',
+                intensity: 'Ouvir Intensidade (Volume)',
+                timbre: 'Ouvir Nota Lá (440 Hz) neste Timbre'
+            };
+            Object.keys(labels).forEach(key => {
+                const btn = document.getElementById(`audioBtn-${key}`);
+                if (btn) {
+                    btn.querySelector('span').textContent = labels[key];
+                    btn.classList.remove('ring-2', 'ring-white');
+                }
+            });
+
+            document.getElementById('globalStopAudio').classList.add('hidden');
+            document.getElementById('globalStopAudio').classList.remove('flex');
+            activeAudioMode = null;
+        }
+
+        function toggleAudio(mode) {
+            if (activeAudioMode === mode) {
+                stopAllAudio();
+                return;
+            }
+
+            stopAllAudio();
+            initAudioContext();
+            activeAudioMode = mode;
+
+            currentGain = audioCtx.createGain();
+            currentGain.connect(audioCtx.destination);
+
+            if (mode === 'pitch') {
+                const osc = audioCtx.createOscillator();
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(state.pitchFreq, audioCtx.currentTime);
+                currentGain.gain.setValueAtTime(0.12, audioCtx.currentTime);
+                osc.connect(currentGain);
+                osc.start();
+                currentOscillators.push(osc);
+            } else if (mode === 'intensity') {
+                const osc = audioCtx.createOscillator();
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(440, audioCtx.currentTime);
+                // Mapeia 20dB -> 120dB para um ganho seguro aos ouvidos (0.005 a 0.25)
+                const norm = (state.intensityDb - 20) / 100;
+                const safeGain = 0.005 + Math.pow(norm, 2) * 0.25;
+                currentGain.gain.setValueAtTime(safeGain, audioCtx.currentTime);
+                osc.connect(currentGain);
+                osc.start();
+                currentOscillators.push(osc);
+            } else if (mode === 'timbre') {
+                const baseFreq = 440; // Nota Lá 4
+                currentGain.gain.setValueAtTime(0.12, audioCtx.currentTime);
+
+                if (state.timbreType === 'diapasao') {
+                    const osc = audioCtx.createOscillator();
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(baseFreq, audioCtx.currentTime);
+                    osc.connect(currentGain);
+                    osc.start();
+                    currentOscillators.push(osc);
+                } else if (state.timbreType === 'violao') {
+                    // Soma de harmônicos simulando corda dedilhada
+                    const harmonics = [1, 2, 3, 4];
+                    const weights = [0.6, 0.3, 0.15, 0.08];
+                    harmonics.forEach((h, i) => {
+                        const osc = audioCtx.createOscillator();
+                        const hGain = audioCtx.createGain();
+                        osc.type = 'triangle';
+                        osc.frequency.setValueAtTime(baseFreq * h, audioCtx.currentTime);
+                        hGain.gain.setValueAtTime(weights[i], audioCtx.currentTime);
+                        osc.connect(hGain);
+                        hGain.connect(currentGain);
+                        osc.start();
+                        currentOscillators.push(osc);
+                    });
+                } else if (state.timbreType === 'piano') {
+                    // Soma de harmônicos simulando corda percutida
+                    const harmonics = [1, 2, 3, 5];
+                    const weights = [0.65, 0.22, 0.18, 0.06];
+                    harmonics.forEach((h, i) => {
+                        const osc = audioCtx.createOscillator();
+                        const hGain = audioCtx.createGain();
+                        osc.type = i === 0 ? 'sine' : 'sawtooth';
+                        osc.frequency.setValueAtTime(baseFreq * h, audioCtx.currentTime);
+                        hGain.gain.setValueAtTime(weights[i] * 0.5, audioCtx.currentTime);
+                        osc.connect(hGain);
+                        hGain.connect(currentGain);
+                        osc.start();
+                        currentOscillators.push(osc);
+                    });
+                }
+            }
+
+            const btn = document.getElementById(`audioBtn-${mode}`);
+            if (btn) {
+                btn.querySelector('span').textContent = 'Pausar Som';
+                btn.classList.add('ring-2', 'ring-white');
+            }
+            const globalStop = document.getElementById('globalStopAudio');
+            globalStop.classList.remove('hidden');
+            globalStop.classList.add('flex');
+        }
+
+        function updateLiveAudioParams() {
+            if (!audioCtx || !activeAudioMode) return;
+            if (activeAudioMode === 'pitch' && currentOscillators[0]) {
+                currentOscillators[0].frequency.setTargetAtTime(state.pitchFreq, audioCtx.currentTime, 0.03);
+            } else if (activeAudioMode === 'intensity' && currentGain) {
+                const norm = (state.intensityDb - 20) / 100;
+                const safeGain = 0.005 + Math.pow(norm, 2) * 0.25;
+                currentGain.gain.setTargetAtTime(safeGain, audioCtx.currentTime, 0.03);
+            }
+        }
+
+        // ==========================================
+        // 6. LÓGICA DO MINI-QUIZ INTERATIVO
+        // ==========================================
+        const quizAnswers = {
+            1: {
+                correct: 1,
+                explanation: "Correto! Na física, altura refere-se à frequência: som 'alto' é sinônimo de som agudo (alta frequência), e não de volume forte."
+            },
+            2: {
+                correct: 2,
+                explanation: "Exato! O timbre funciona como a 'impressão digital' sonora, permitindo distinguir fontes diferentes mesmo com mesma altura e mesma intensidade."
+            },
+            3: {
+                correct: 0,
+                explanation: "Perfeito! A intensidade depende da amplitude (energia) da onda e sons acima de 85 dB por tempo prolongado prejudicam a audição."
+            }
+        };
+
+        const answeredQuestions = new Set();
+        let score = 0;
+
+        function checkAnswer(qNum, selectedIdx, btnElement) {
+            if (answeredQuestions.has(qNum)) return;
+            answeredQuestions.add(qNum);
+
+            const data = quizAnswers[qNum];
+            const isCorrect = selectedIdx === data.correct;
+            const allButtons = document.querySelectorAll(`.quiz-opt-${qNum}`);
+            const feedbackEl = document.getElementById(`q${qNum}-feedback`);
+
+            allButtons.forEach((btn, idx) => {
+                btn.disabled = true;
+                btn.classList.remove('hover:bg-slate-700/80');
+                if (idx === data.correct) {
+                    btn.className = "text-left p-3 rounded-xl bg-emerald-500/20 border border-emerald-500 text-sm text-emerald-200 font-semibold";
+                } else if (idx === selectedIdx && !isCorrect) {
+                    btn.className = "text-left p-3 rounded-xl bg-rose-500/20 border border-rose-500 text-sm text-rose-200";
+                } else {
+                    btn.className = "text-left p-3 rounded-xl bg-slate-900/50 border border-slate-800 text-sm text-slate-500";
+                }
+            });
+
+            if (isCorrect) {
+                score++;
+                feedbackEl.textContent = data.explanation;
+                feedbackEl.className = "text-xs font-medium pt-2 text-emerald-400 block";
+            } else {
+                feedbackEl.textContent = `Ops! ${data.explanation}`;
+                feedbackEl.className = "text-xs font-medium pt-2 text-amber-400 block";
+            }
+
+            document.getElementById('quizScoreBadge').textContent = `${score} / 3 Acertos`;
+        }
+
+        // Inicialização no carregamento da janela
+        window.onload = function() {
+            resizeCanvases();
+            animateLoop();
+        };
+    </script>
+</body>
+</html>
+
+
+
